@@ -1,20 +1,11 @@
 name: Go Build and Test
 description: Composite action to build and test a Go project
 
-inputs:
-  build-command:
-    description: Command to build the Go project
-    required: false
-    default: go build ./...
-  binary-path:
-    description: Path to the compiled binary to upload as an artifact
-    required: false
-    default: main
-
 outputs:
   build-status:
     description: Status of the build step
     value: ${{ steps.build.outcome }}
+    
 
 runs:
   using: composite
@@ -31,15 +22,15 @@ runs:
       id: build
       shell: bash
       run: |
-        echo "Building project with command: ${{ inputs.build-command }}"
-        ${{ inputs.build-command }}
+        go build -o main .
         ls -lla
 
     - name: Upload binary artifact
       uses: actions/upload-artifact@v4
+      if: ${{ github.event_name != 'pull_request' }}
       with:
         name: artifact
-        path: ${{ inputs.binary-path }}
+        path: main
 
     - name: Build summary
       shell: bash
