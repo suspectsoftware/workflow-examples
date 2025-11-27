@@ -22,7 +22,7 @@ outputs:
     value: ${{ steps.setup-node.outputs.node-version }}
   cache-hit:
     description: 'Whether dependencies were restored from cache'
-    value: ${{ steps.cache-deps.outputs.cache-hit }}
+    value: ${{ steps.setup-node.outputs.cache-hit }}
 
 runs:
   using: 'composite'
@@ -35,19 +35,8 @@ runs:
         cache: 'npm'
         cache-dependency-path: ${{ inputs.cache-dependency-path }}
     
-    - name: Cache dependencies
-      id: cache-deps
-      uses: actions/cache@v3
-      with:
-        path: |
-          ~/.npm
-          node_modules
-        key: ${{ runner.os }}-node-${{ hashFiles(inputs.cache-dependency-path) }}
-        restore-keys: |
-          ${{ runner.os }}-node-
-    
     - name: Install dependencies
-      if: inputs.install-dependencies == 'true' && steps.cache-deps.outputs.cache-hit != 'true'
+      if: inputs.install-dependencies == 'true'
       shell: bash
       run: |
         echo "Installing dependencies..."
