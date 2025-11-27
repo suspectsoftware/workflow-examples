@@ -9,7 +9,7 @@ inputs:
   upload-coverage:
     description: Upload test coverage report
     required: false
-    default: 'false'
+    default: 'true'
   coverage-file:
     description: Coverage output file
     required: false

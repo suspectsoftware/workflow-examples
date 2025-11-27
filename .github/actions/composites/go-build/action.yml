@@ -6,6 +6,10 @@ inputs:
     description: Command to build the Go project
     required: false
     default: go build ./...
+  binary-path:
+    description: Path to the compiled binary to upload as an artifact
+    required: false
+    default: main
 
 outputs:
   build-status:
@@ -30,11 +34,15 @@ runs:
         echo "Building project with command: ${{ inputs.build-command }}"
         ${{ inputs.build-command }}
 
+    - name: Upload binary artifact
+      if: ${{ steps.build.outcome == 'success' }}
+      uses: actions/upload-artifact@v4
+      with:
+        name: go-binary
+        path: ${{ inputs.binary-path }}
+
     - name: Build summary
       shell: bash
       run: |
         echo "### Go Build Summary" >> $GITHUB_STEP_SUMMARY
         echo "- Build Status: ${{ steps.build.outcome }}" >> $GITHUB_STEP_SUMMARY
-        if [[ "${{ inputs.upload-coverage }}" == "true" ]]; then
-          echo "- Coverage File: ${{ inputs.coverage-file }}" >> $GITHUB_STEP_SUMMARY
-        fi
