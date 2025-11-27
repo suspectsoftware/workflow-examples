@@ -1,0 +1,58 @@
+name: Go Build and Test
+description: Composite action to build and test a Go project
+
+inputs:
+  test-command:
+    description: Command to run Go tests
+    required: false
+    default: go test ./... -v
+  upload-coverage:
+    description: Upload test coverage report
+    required: false
+    default: 'false'
+  coverage-file:
+    description: Coverage output file
+    required: false
+    default: coverage.out
+
+outputs:
+  test-status:
+    description: Status of the test step
+    value: ${{ steps.test.outcome }}
+
+runs:
+  using: composite
+  steps:
+    - name: Set up Go
+      uses: actions/setup-go@v5
+      with:
+        go-version: '>=1.24'
+
+    - name: Run tests
+      id: test
+      shell: bash
+      run: |
+        echo "Running tests with command: ${{ inputs.test-command }}"
+        # Run tests and produce coverage if requested
+        if [[ "${{ inputs.upload-coverage }}" == "true" ]]; then
+          ${{ inputs.test-command }} -coverprofile=${{ inputs.coverage-file }}
+        else
+          ${{ inputs.test-command }}
+        fi
+
+    - name: Upload coverage
+      if: inputs.upload-coverage == 'true' && steps.test.outcome == 'success'
+      uses: actions/upload-artifact@v4
+      with:
+        name: go-coverage-report
+        path: ${{ inputs.coverage-file }}
+        retention-days: 30
+
+    - name: Build summary
+      shell: bash
+      run: |
+        echo "### Go Test Summary" >> $GITHUB_STEP_SUMMARY
+        echo "- Test Status: ${{ steps.test.outcome }}" >> $GITHUB_STEP_SUMMARY
+        if [[ "${{ inputs.upload-coverage }}" == "true" ]]; then
+          echo "- Coverage File: ${{ inputs.coverage-file }}" >> $GITHUB_STEP_SUMMARY
+        fi

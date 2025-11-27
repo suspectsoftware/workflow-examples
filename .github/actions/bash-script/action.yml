@@ -1,0 +1,76 @@
+name: File Transform and Upload
+description: Deploy an application specification to a Kubernetes cluster
+inputs:
+  source-directory:
+    description: Directory containing the source files to copy
+    required: true
+  target-directory:
+    description: Directory to copy the files
+    required: true
+  clean-target-directory:
+    description: Whether to clean the application directory before copying new files
+    required: true
+    default: true
+  organization:
+    description: GitHub organization where the GitOps repository is located
+    required: true
+  repository:
+    description: Name of the GitHub repository
+    required: true
+  ref:
+    description: Ref to deploy to files to
+    required: true
+  version:
+    description: New version of the app
+    required: true
+  github-app-id:
+    description: GitHub App ID used for reading helm chart
+    required: true
+  github-app-private-key:
+    description: GitHub App Private Key used for reading helm chart
+    required: true
+
+runs:
+  using: composite
+  steps:
+    - name: Get token for GitOps repository checkout
+      id: token
+      uses: getsentry/action-github-app-token@v2
+      with:
+        app_id: ${{ inputs.github-app-id }}
+        private_key: ${{ inputs.github-app-private-key }}
+        scope: ${{ inputs.organization }}
+
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        path: app-repo
+
+    - name: Checkout target repository
+      uses: actions/checkout@v4
+      with:
+        repository: ${{ inputs.organization }}/${{ inputs.repository }}
+        token: ${{ steps.token.outputs.token }}
+        ref: ${{ inputs.ref }}
+        path: target-repo
+
+    - name: Clean target directory
+      if: ${{ inputs.clean-app-directory == 'true' }}
+      shell: bash
+      run: |
+        rm -rf ${{ github.workspace }}/target-repo/${{ inputs.target-directory }}/*
+
+    - name: Transform files
+      shell: bash
+      run: |
+        bash ${{ github.action_path }}/transform.sh \
+          --target-dir ${{ github.workspace }}/app-repo/${{ inputs.source-directory }} \
+          --version ${{ inputs.version }}
+
+    - name: Copy files
+      shell: bash
+      run: |
+        bash ${{ github.action_path }}/upload.sh \
+          --source-dir ${{ github.workspace }}/app-repo/${{ inputs.source-directory }} \
+          --target-dir ${{ github.workspace }}/target-repo/${{ inputs.target-directory }} \
+          --branch ${{ inputs.ref }}

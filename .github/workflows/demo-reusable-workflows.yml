@@ -1,0 +1,45 @@
+name: Demo - Using Reusable Workflows
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ main, develop ]
+
+permissions:
+  contents: read
+
+jobs:
+  # First job: Call the reusable CI workflow
+  ci:
+    uses: ./.github/workflows/reusable-ci.yml
+    with:
+      node-version: '20'
+      run-tests: true
+  
+  # Second job: Call the CI workflow with different parameters
+  ci-alternate:
+    uses: ./.github/workflows/reusable-ci.yml
+    with:
+      node-version: '18'
+      run-tests: false
+  
+  # Third job: Deploy to staging (depends on CI)
+  deploy-staging:
+    needs: ci
+    uses: ./.github/workflows/reusable-deploy.yml
+    with:
+      environment: staging
+      artifact-name: build-artifact
+    secrets:
+      DEPLOY_TOKEN: ${{ secrets.DEPLOY_TOKEN }}
+  
+  # Fourth job: Deploy to production (manual approval)
+  deploy-production:
+    needs: deploy-staging
+    uses: ./.github/workflows/reusable-deploy.yml
+    if: github.ref == 'refs/heads/main'
+    with:
+      environment: production
+      artifact-name: build-artifact
+    secrets:
+      DEPLOY_TOKEN: ${{ secrets.DEPLOY_TOKEN }}

@@ -1,0 +1,90 @@
+name: Demo - Using Bash Actions
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 0 * * 0'  # Weekly on Sunday
+
+permissions:
+  contents: read
+
+jobs:
+  simple-bash-action:
+    runs-on: ubuntu-latest
+    name: Simple Bash Action Demo
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      # Use simple bash action with default greeting
+      - name: Greet with default
+        id: greet1
+        uses: ./.github/actions/bash-simple
+        with:
+          name: 'World'
+      
+      - name: Display greeting output
+        run: |
+          echo "Message: ${{ steps.greet1.outputs.message }}"
+          echo "Time: ${{ steps.greet1.outputs.time }}"
+      
+      # Use simple bash action with custom greeting
+      - name: Greet with custom message
+        id: greet2
+        uses: ./.github/actions/bash-simple
+        with:
+          name: 'GitHub Actions'
+          greeting: 'Welcome'
+          format: 'json'
+      
+      - name: Display custom greeting
+        run: |
+          echo "Message: ${{ steps.greet2.outputs.message }}"
+          echo "Time: ${{ steps.greet2.outputs.time }}"
+  
+  script-bash-action:
+    runs-on: ubuntu-latest
+    name: Script-based Bash Action Demo
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      # Count markdown files
+      - name: Count markdown files
+        id: count
+        uses: ./.github/actions/bash-script
+        with:
+          path: './'
+          pattern: '*.md'
+          operation: 'count'
+      
+      - name: Display count
+        run: |
+          echo "Found ${{ steps.count.outputs.count }} markdown files"
+      
+      # List YAML files
+      - name: List workflow files
+        id: list
+        uses: ./.github/actions/bash-script
+        with:
+          path: '.github/workflows'
+          pattern: '*.yml'
+          operation: 'list'
+      
+      - name: Display files
+        run: |
+          echo "Workflow files found:"
+          echo "${{ steps.list.outputs.files }}"
+      
+      # Calculate size of action files
+      - name: Calculate action files size
+        id: size
+        uses: ./.github/actions/bash-script
+        with:
+          path: '.github/actions'
+          pattern: '*.yml'
+          operation: 'size'
+      
+      - name: Display size
+        run: |
+          echo "Total size: ${{ steps.size.outputs.total-size }} bytes"

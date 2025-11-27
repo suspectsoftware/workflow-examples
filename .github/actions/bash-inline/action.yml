@@ -1,0 +1,51 @@
+name: 'Simple Bash Action'
+description: 'A simple bash-based action that processes input and produces output'
+
+inputs:
+  name:
+    description: 'Name to greet'
+    required: true
+  greeting:
+    description: 'Greeting to use'
+    required: false
+    default: 'Hello'
+  format:
+    description: 'Output format (text/json)'
+    required: false
+    default: 'text'
+
+outputs:
+  message:
+    description: 'The greeting message'
+  time:
+    description: 'Time when the greeting was generated'
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Generate greeting
+      shell: bash
+      run: |
+        # Get current time
+        CURRENT_TIME=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+        
+        # Generate message
+        MESSAGE="${{ inputs.greeting }}, ${{ inputs.name }}!"
+        
+        # Format output based on input
+        if [ "${{ inputs.format }}" == "json" ]; then
+          echo "Output in JSON format:"
+          echo "{\"message\": \"$MESSAGE\", \"time\": \"$CURRENT_TIME\"}"
+        else
+          echo "Output in text format:"
+          echo "$MESSAGE"
+        fi
+        
+        # Set outputs
+        echo "message=$MESSAGE" >> $GITHUB_OUTPUT
+        echo "time=$CURRENT_TIME" >> $GITHUB_OUTPUT
+        
+        # Add to step summary
+        echo "### Greeting Generated" >> $GITHUB_STEP_SUMMARY
+        echo "- Message: $MESSAGE" >> $GITHUB_STEP_SUMMARY
+        echo "- Time: $CURRENT_TIME" >> $GITHUB_STEP_SUMMARY

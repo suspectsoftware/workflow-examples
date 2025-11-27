@@ -1,0 +1,63 @@
+name: Demo - Using Composite Actions
+
+on:
+  workflow_dispatch:
+  pull_request:
+    branches: [ main, develop ]
+
+permissions:
+  contents: read
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      # Use the composite setup action
+      - name: Setup environment
+        id: setup
+        uses: ./.github/actions/composite-setup
+        with:
+          node-version: '18'
+          cache-dependency-path: 'package-lock.json'
+          install-dependencies: 'true'
+      
+      - name: Display setup outputs
+        run: |
+          echo "Node version installed: ${{ steps.setup.outputs.node-version }}"
+          echo "Cache hit: ${{ steps.setup.outputs.cache-hit }}"
+      
+      # Use the composite build-test action
+      - name: Build and test
+        id: build-test
+        uses: ./.github/actions/composite-build-test
+        with:
+          build-command: 'echo "Building..." && mkdir -p dist'
+          test-command: 'echo "Testing..." && echo "All tests passed!"'
+          skip-tests: 'false'
+          upload-coverage: 'false'
+      
+      - name: Display build outputs
+        run: |
+          echo "Build status: ${{ steps.build-test.outputs.build-status }}"
+          echo "Test status: ${{ steps.build-test.outputs.test-status }}"
+  
+  # Example with different parameters
+  build-without-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Setup environment
+        uses: ./.github/actions/composite-setup
+        with:
+          node-version: '20'
+      
+      - name: Build only
+        uses: ./.github/actions/composite-build-test
+        with:
+          build-command: 'echo "Production build..." && mkdir -p dist/prod'
+          skip-tests: 'true'
