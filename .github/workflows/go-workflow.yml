@@ -20,7 +20,7 @@ jobs:
     if: ${{ github.event_name == 'pull_request' }}
     steps:
       - name: Build
-        uses: ./.github/actions/composites/go-build
+        uses: suspectsoftware/workflow-examples/.github/actions/composites/go-build@main
   
   build:
     name: Build
@@ -28,11 +28,8 @@ jobs:
     needs: [versioning]
     if: ${{ github.event_name != 'pull_request' }}
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
       - name: Build
-        uses: ${{ github.action_path }}/.github/actions/composites/go-build
+        uses: suspectsoftware/workflow-examples/.github/actions/composites/go-build@main
 
   test:
     name: Test
@@ -40,7 +37,7 @@ jobs:
     needs: [versioning]
     steps:
       - name: Test
-        uses: ./.github/actions/composites/go-test
+        uses: suspectsoftware/workflow-examples/.github/actions/composites/go-test@main
 
   deploy_test:
     name: Deploy Test
@@ -49,7 +46,7 @@ jobs:
     if: ${{ github.event_name != 'pull_request' }}
     steps:
       - name: Deploy
-        uses: ./.github/actions/composites/deploy
+        uses: suspectsoftware/workflow-examples/.github/actions/composites/deploy@main
 
   deploy_prod:
     name: Deploy Prod
@@ -58,5 +55,5 @@ jobs:
     if: ${{ github.event_name != 'pull_request' }}
     steps:
       - name: Deploy
-        uses: ./.github/actions/composites/deploy
+        uses: suspectsoftware/workflow-examples/.github/actions/composites/deploy@main
   
