@@ -30,6 +30,8 @@ jobs:
     steps:
       - name: Build
         uses: suspectsoftware/workflow-examples/.github/actions/composites/go-build@main
+        with:
+          binary-path: main
 
   test:
     name: Test
