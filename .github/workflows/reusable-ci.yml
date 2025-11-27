@@ -18,6 +18,9 @@ on:
         description: 'Result of the test execution'
         value: ${{ jobs.ci.outputs.result }}
 
+permissions:
+  contents: read
+
 jobs:
   ci:
     runs-on: ubuntu-latest

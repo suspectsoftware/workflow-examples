@@ -5,6 +5,9 @@ on:
   push:
     branches: [ main, develop ]
 
+permissions:
+  contents: read
+
 jobs:
   # First job: Call the reusable CI workflow
   ci:
