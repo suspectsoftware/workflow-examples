@@ -54,7 +54,7 @@ case "$INPUT_OPERATION" in
         TOTAL_SIZE=0
         while IFS= read -r file; do
             if [ -f "$file" ]; then
-                SIZE=$(stat -f%z "$file" 2>/dev/null || stat -c%s "$file" 2>/dev/null)
+                SIZE=$(stat -c%s "$file" 2>/dev/null || stat -f%z "$file" 2>/dev/null)
                 TOTAL_SIZE=$((TOTAL_SIZE + SIZE))
             fi
         done < <(find "$INPUT_PATH" -name "$INPUT_PATTERN" -type f 2>/dev/null)
