@@ -28,8 +28,11 @@ jobs:
     needs: [versioning]
     if: ${{ github.event_name != 'pull_request' }}
     steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
       - name: Build
-        uses: ./.github/actions/composites/go-build
+        uses: ${{ github.action_path }}/.github/actions/composites/go-build
 
   test:
     name: Test
