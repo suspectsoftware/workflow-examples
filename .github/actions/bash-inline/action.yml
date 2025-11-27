@@ -21,7 +21,7 @@ outputs:
     description: 'Time when the greeting was generated'
 
 runs:
-  using: 'composite'
+  using: composite
   steps:
     - name: Generate greeting
       shell: bash

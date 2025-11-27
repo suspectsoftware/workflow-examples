@@ -19,8 +19,8 @@ jobs:
     needs: [versioning]
     if: ${{ github.event_name == 'pull_request' }}
     steps:
-      - name: Write version
-        run: echo "${{ needs.versioning.outputs.FullSemVer }}"
+      - name: Build
+        uses: ./.github/actions/composites/go-build
   
   build:
     name: Build
@@ -28,14 +28,33 @@ jobs:
     needs: [versioning]
     if: ${{ github.event_name != 'pull_request' }}
     steps:
-      #- name: Get app token
-      #  id: app_token
-      #  uses: getsentry/action-github-app-token@v3
-      #  with:
-      #    app_id: ${{ secrets.ACTIONS_APP_ID }}
-      #   private_key: ${{ secrets.ACTIONS_APP_PRIVATE_KEY }}
-      #    scope: ${{ github.repository_owner }}
+      - name: Build
+        uses: ./.github/actions/composites/go-build
 
-      - name: Write version
-        run: echo "${{ needs.versioning.outputs.FullSemVer }}"
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+    needs: [versioning]
+    if: ${{ github.event_name != 'pull_request' }}
+    steps:
+      - name: Test
+        uses: ./.github/actions/composites/go-test
+
+  deploy_test:
+    name: Deploy Test
+    runs-on: ubuntu-latest
+    needs: [build, test, versioning]
+    if: ${{ github.event_name != 'pull_request' }}
+    steps:
+      - name: Deploy
+        uses: ./.github/actions/composites/deploy
+
+  deploy_prod:
+    name: Deploy Prod
+    runs-on: ubuntu-latest
+    needs: [build, test, versioning]
+    if: ${{ github.event_name != 'pull_request' }}
+    steps:
+      - name: Deploy
+        uses: ./.github/actions/composites/deploy
   
