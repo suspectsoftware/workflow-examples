@@ -43,7 +43,7 @@ jobs:
     name: Deploy Test
     runs-on: ubuntu-latest
     needs: [build, test, versioning]
-    if: ${{ github.event_name != 'pull_request' }}
+    if: ${{ github.event_name != 'pull_request' && github.ref != 'refs/heads/main' }}
     steps:
       - name: Deploy
         uses: suspectsoftware/workflow-examples/.github/actions/composites/deploy@main
@@ -52,7 +52,7 @@ jobs:
     name: Deploy Prod
     runs-on: ubuntu-latest
     needs: [build, test, versioning]
-    if: ${{ github.event_name != 'pull_request' }}
+    if: ${{ github.event_name != 'pull_request'  && github.ref == 'refs/heads/main' }}
     steps:
       - name: Deploy
         uses: suspectsoftware/workflow-examples/.github/actions/composites/deploy@main
