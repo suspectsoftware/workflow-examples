@@ -6,10 +6,6 @@ inputs:
     description: Command to run Go tests
     required: false
     default: go test ./... -v
-  upload-coverage:
-    description: Upload test coverage report
-    required: false
-    default: 'true'
   coverage-file:
     description: Coverage output file
     required: false
@@ -44,7 +40,6 @@ runs:
         fi
 
     - name: Upload coverage
-      if: inputs.upload-coverage == 'true' && steps.test.outcome == 'success'
       uses: actions/upload-artifact@v4
       with:
         name: go-coverage-report
@@ -56,6 +51,3 @@ runs:
       run: |
         echo "### Go Test Summary" >> $GITHUB_STEP_SUMMARY
         echo "- Test Status: ${{ steps.test.outcome }}" >> $GITHUB_STEP_SUMMARY
-        if [[ "${{ inputs.upload-coverage }}" == "true" ]]; then
-          echo "- Coverage File: ${{ inputs.coverage-file }}" >> $GITHUB_STEP_SUMMARY
-        fi

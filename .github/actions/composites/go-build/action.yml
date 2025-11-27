@@ -35,7 +35,6 @@ runs:
         ${{ inputs.build-command }}
 
     - name: Upload binary artifact
-      if: ${{ steps.build.outcome == 'success' }}
       uses: actions/upload-artifact@v4
       with:
         name: go-binary
