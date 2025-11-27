@@ -39,8 +39,12 @@ runs:
       if: inputs.install-dependencies == 'true'
       shell: bash
       run: |
-        echo "Installing dependencies..."
-        npm ci
+        if [ -f "package.json" ]; then
+          echo "Installing dependencies..."
+          npm ci
+        else
+          echo "No package.json found, skipping dependency installation"
+        fi
     
     - name: Print environment info
       shell: bash
