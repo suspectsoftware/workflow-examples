@@ -6,10 +6,6 @@ inputs:
     description: Command to run Go tests
     required: false
     default: go test ./... -v
-  coverage-file:
-    description: Coverage output file
-    required: false
-    default: coverage.out
 
 outputs:
   test-status:
@@ -30,21 +26,7 @@ runs:
     - name: Run tests
       id: test
       shell: bash
-      run: |
-        echo "Running tests with command: ${{ inputs.test-command }}"
-        # Run tests and produce coverage if requested
-        if [[ "${{ inputs.upload-coverage }}" == "true" ]]; then
-          ${{ inputs.test-command }} -coverprofile=${{ inputs.coverage-file }}
-        else
-          ${{ inputs.test-command }}
-        fi
-
-    - name: Upload coverage
-      uses: actions/upload-artifact@v4
-      with:
-        name: go-coverage-report
-        path: ${{ inputs.coverage-file }}
-        retention-days: 30
+      run: ${{ inputs.test-command }}
 
     - name: Build summary
       shell: bash
