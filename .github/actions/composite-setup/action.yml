@@ -1,0 +1,61 @@
+name: 'Setup Environment'
+description: 'Composite action to setup development environment with Node.js and dependencies'
+author: 'Suspect Software'
+
+inputs:
+  node-version:
+    description: 'Node.js version to install'
+    required: false
+    default: '18'
+  cache-dependency-path:
+    description: 'Path to package-lock.json or yarn.lock for caching'
+    required: false
+    default: 'package-lock.json'
+  install-dependencies:
+    description: 'Whether to install dependencies'
+    required: false
+    default: 'true'
+
+outputs:
+  node-version:
+    description: 'The Node.js version that was installed'
+    value: ${{ steps.setup-node.outputs.node-version }}
+  cache-hit:
+    description: 'Whether dependencies were restored from cache'
+    value: ${{ steps.cache-deps.outputs.cache-hit }}
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Setup Node.js
+      id: setup-node
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ inputs.node-version }}
+        cache: 'npm'
+        cache-dependency-path: ${{ inputs.cache-dependency-path }}
+    
+    - name: Cache dependencies
+      id: cache-deps
+      uses: actions/cache@v3
+      with:
+        path: |
+          ~/.npm
+          node_modules
+        key: ${{ runner.os }}-node-${{ hashFiles(inputs.cache-dependency-path) }}
+        restore-keys: |
+          ${{ runner.os }}-node-
+    
+    - name: Install dependencies
+      if: inputs.install-dependencies == 'true' && steps.cache-deps.outputs.cache-hit != 'true'
+      shell: bash
+      run: |
+        echo "Installing dependencies..."
+        npm ci
+    
+    - name: Print environment info
+      shell: bash
+      run: |
+        echo "Node.js version: $(node --version)"
+        echo "NPM version: $(npm --version)"
+        echo "Working directory: $(pwd)"

@@ -1,0 +1,72 @@
+name: 'Build and Test'
+description: 'Composite action to build and test a project'
+author: 'Suspect Software'
+
+inputs:
+  build-command:
+    description: 'Command to build the project'
+    required: false
+    default: 'npm run build'
+  test-command:
+    description: 'Command to run tests'
+    required: false
+    default: 'npm test'
+  skip-tests:
+    description: 'Skip running tests'
+    required: false
+    default: 'false'
+  upload-coverage:
+    description: 'Upload test coverage report'
+    required: false
+    default: 'false'
+
+outputs:
+  build-status:
+    description: 'Status of the build step'
+    value: ${{ steps.build.outcome }}
+  test-status:
+    description: 'Status of the test step'
+    value: ${{ steps.test.outcome }}
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Run linter
+      shell: bash
+      run: |
+        echo "Running linter..."
+        if [ -f "package.json" ] && grep -q "\"lint\"" package.json; then
+          npm run lint || echo "Linting completed with warnings"
+        else
+          echo "No linter configured, skipping..."
+        fi
+    
+    - name: Build project
+      id: build
+      shell: bash
+      run: |
+        echo "Building project with command: ${{ inputs.build-command }}"
+        ${{ inputs.build-command }}
+    
+    - name: Run tests
+      id: test
+      if: inputs.skip-tests != 'true'
+      shell: bash
+      run: |
+        echo "Running tests with command: ${{ inputs.test-command }}"
+        ${{ inputs.test-command }}
+    
+    - name: Upload coverage
+      if: inputs.upload-coverage == 'true' && steps.test.outcome == 'success'
+      uses: actions/upload-artifact@v4
+      with:
+        name: coverage-report
+        path: coverage/
+        retention-days: 30
+    
+    - name: Build summary
+      shell: bash
+      run: |
+        echo "### Build and Test Summary" >> $GITHUB_STEP_SUMMARY
+        echo "- Build Status: ${{ steps.build.outcome }}" >> $GITHUB_STEP_SUMMARY
+        echo "- Test Status: ${{ steps.test.outcome }}" >> $GITHUB_STEP_SUMMARY

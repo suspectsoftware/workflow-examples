@@ -1,0 +1,38 @@
+name: 'File Processor'
+description: 'Bash action with separate script file to process files'
+author: 'Suspect Software'
+
+inputs:
+  path:
+    description: 'Path to search for files'
+    required: false
+    default: './'
+  pattern:
+    description: 'File pattern to match (e.g., *.md, *.js)'
+    required: false
+    default: '*.md'
+  operation:
+    description: 'Operation to perform (count/list/size)'
+    required: false
+    default: 'count'
+
+outputs:
+  count:
+    description: 'Number of files found (for count operation)'
+  files:
+    description: 'List of files found (for list operation)'
+  total-size:
+    description: 'Total size in bytes (for size operation)'
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Execute file processor script
+      shell: bash
+      env:
+        INPUT_PATH: ${{ inputs.path }}
+        INPUT_PATTERN: ${{ inputs.pattern }}
+        INPUT_OPERATION: ${{ inputs.operation }}
+      run: |
+        chmod +x "${{ github.action_path }}/script.sh"
+        "${{ github.action_path }}/script.sh"
