@@ -35,7 +35,6 @@ jobs:
     name: Test
     runs-on: ubuntu-latest
     needs: [versioning]
-    if: ${{ github.event_name != 'pull_request' }}
     steps:
       - name: Test
         uses: ./.github/actions/composites/go-test
